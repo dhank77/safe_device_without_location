@@ -24,13 +24,11 @@ import io.flutter.plugin.common.MethodChannel.Result;
  */
 public class SafeDevicePlugin implements FlutterPlugin, MethodCallHandler {
     private Context context;
-    private static LocationAssistantListener locationAssistantListener;
 
     @Override
     public void onAttachedToEngine(@NonNull FlutterPluginBinding binding) {
 
         this.context = binding.getApplicationContext();
-        locationAssistantListener = new LocationAssistantListener(context);
         onStart();
         final MethodChannel channel = new MethodChannel(
                 binding.getBinaryMessenger(),
@@ -41,15 +39,9 @@ public class SafeDevicePlugin implements FlutterPlugin, MethodCallHandler {
 
     // onstop
     public static void onStop() {
-        if (locationAssistantListener != null) {
-            locationAssistantListener.getAssistant().stop();
-        }
     }
     // onstart
     public static void onStart() {
-        if (locationAssistantListener != null) {
-            locationAssistantListener.getAssistant().start();
-        }
     }
 
 
@@ -79,66 +71,4 @@ public class SafeDevicePlugin implements FlutterPlugin, MethodCallHandler {
     }
 
 
-}
-
-class LocationAssistantListener implements LocationAssistant.Listener {
-    private final LocationAssistant assistant;
-    private String latitude;
-    private String longitude;
-
-    public LocationAssistantListener(Context context) {
-        assistant = new LocationAssistant(context, this, LocationAssistant.Accuracy.HIGH, 5000, false);
-        assistant.setVerbose(true);
-        assistant.start();
-    }
-
-    @Override
-    public void onNeedLocationPermission() {
-        assistant.requestLocationPermission();
-        assistant.requestAndPossiblyExplainLocationPermission();
-    }
-
-    @Override
-    public void onExplainLocationPermission() {
-        io.flutter.Log.i("i", "onExplainLocationPermission: ");
-    }
-
-    @Override
-    public void onLocationPermissionPermanentlyDeclined(View.OnClickListener fromView, DialogInterface.OnClickListener fromDialog) {
-        io.flutter.Log.i("i", "onLocationPermissionPermanentlyDeclined: ");
-    }
-
-    @Override
-    public void onNeedLocationSettingsChange() {
-        io.flutter.Log.i("i", "LocationSettingsStatusCodes.RESOLUTION_REQUIRED: Please Turn on GPS location service.");
-    }
-
-    @Override
-    public void onFallBackToSystemSettings(View.OnClickListener fromView, DialogInterface.OnClickListener fromDialog) {
-        io.flutter.Log.i("i", "onFallBackToSystemSettings: ");
-    }
-
-    @Override
-    public void onNewLocationAvailable(Location location) {
-        if (location == null) return;
-        latitude = location.getLatitude() + "";
-        longitude = location.getLongitude() + "";
-    }
-
-    @Override
-    public void onError(LocationAssistant.ErrorType type, String message) {
-        io.flutter.Log.i("i", "Error: " + message);
-    }
-
-    public String getLatitude() {
-        return latitude;
-    }
-
-    public String getLongitude() {
-        return longitude;
-    }
-
-    public LocationAssistant getAssistant() {
-        return assistant;
-    }
 }
